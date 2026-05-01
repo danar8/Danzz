@@ -1,18 +1,12 @@
--- ELIXIR 3.5 FULL FIXED -- DEEP PURPLE THEME
--- BYPASS: ANTI AFK, AUTO FARM, ESP, TP, RESPAWN
-
+-- ELIXIR 3.5 -- FARM, AUTO, STATUS, TP ONLY
 local Players = game:GetService("Players")
 local player = game.Players.LocalPlayer
 local vim = game:GetService("VirtualInputManager")
-local ContextActionService = game:GetService("ContextActionService")
 local VirtualUser = game:GetService("VirtualUser")
-local UIS = game:GetService("UserInputService")
-local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 repeat task.wait() until player.Character
-
 local playerGui = player:WaitForChild("PlayerGui")
 
 -- ========== VARIABLES ==========
@@ -20,19 +14,12 @@ local running = false
 local autoSellEnabled = false
 local buyAmount = 1
 local autoFarmRunning = false
-local autoFarmStopping = false
 local cookAmount = 5
-local selectedSpawn = nil
 
 local buyRemote = ReplicatedStorage:FindFirstChild("RemoteEvents") and ReplicatedStorage.RemoteEvents:FindFirstChild("StorePurchase")
-
 if not buyRemote then
-    warn("StorePurchase remote tidak ditemukan, coba cari lagi...")
     for _, v in pairs(ReplicatedStorage:GetDescendants()) do
-        if v.Name == "StorePurchase" then
-            buyRemote = v
-            break
-        end
+        if v.Name == "StorePurchase" then buyRemote = v break end
     end
 end
 
@@ -49,8 +36,6 @@ local csn1 = CFrame.new(1178.833,3.95,-227.372)
 local csn2 = CFrame.new(1205.088,3.95,-220.542)
 local csn3 = CFrame.new(1204.281,3.712,-182.851)
 local csn4 = CFrame.new(1178.585,3.712,-189.710)
-local safePos = Vector3.new(579.0, 3.5, -539.7)
-local mallPos = Vector3.new(-725.4, 4.8, 587.4)
 
 -- ========== ANTI AFK ==========
 pcall(function()
@@ -116,15 +101,14 @@ local C = {
     panel = Color3.fromRGB(18,16,30), card = Color3.fromRGB(24,21,40),
     sidebar = Color3.fromRGB(11,9,20), accent = Color3.fromRGB(130,60,240),
     accentDim = Color3.fromRGB(75,35,140), accentGlow = Color3.fromRGB(175,120,255),
-    accentSoft = Color3.fromRGB(100,55,190), text = Color3.fromRGB(220,215,245),
-    textMid = Color3.fromRGB(145,138,175), textDim = Color3.fromRGB(75,68,100),
-    green = Color3.fromRGB(55,200,110), red = Color3.fromRGB(220,60,75),
-    border = Color3.fromRGB(38,32,62)
+    text = Color3.fromRGB(220,215,245), textMid = Color3.fromRGB(145,138,175),
+    textDim = Color3.fromRGB(75,68,100), green = Color3.fromRGB(55,200,110),
+    red = Color3.fromRGB(220,60,75), border = Color3.fromRGB(38,32,62)
 }
 
 -- ========== GUI SETUP ==========
 local gui = Instance.new("ScreenGui")
-gui.Name = "ELIXIR_3_5_FULL"
+gui.Name = "ELIXIR_3_5"
 gui.Parent = playerGui
 gui.ResetOnSpawn = false
 
@@ -153,10 +137,6 @@ local function notify(title, msg, ntype)
     card.ZIndex = 100
     card.LayoutOrder = notifCount
     Instance.new("UICorner", card).CornerRadius = UDim.new(0, 8)
-    local stroke = Instance.new("UIStroke", card)
-    stroke.Color = color
-    stroke.Thickness = 1
-    stroke.Transparency = 0.5
     local t = Instance.new("TextLabel", card)
     t.Position = UDim2.new(0, 14, 0, 7)
     t.Size = UDim2.new(1, -22, 0, 18)
@@ -193,8 +173,8 @@ end
 
 -- ========== MAIN WINDOW ==========
 local main = Instance.new("Frame", gui)
-main.Size = UDim2.new(0, 660, 0, 430)
-main.Position = UDim2.new(0.5, -330, 0.5, -215)
+main.Size = UDim2.new(0, 500, 0, 550)
+main.Position = UDim2.new(0.5, -250, 0.5, -275)
 main.BackgroundColor3 = C.bg
 main.Active = true
 main.Draggable = true
@@ -207,10 +187,10 @@ topBar.BackgroundColor3 = C.surface
 Instance.new("UICorner", topBar).CornerRadius = UDim.new(0, 12)
 
 local titleLbl = Instance.new("TextLabel", topBar)
-titleLbl.Position = UDim2.new(0, 28, 0, 0)
-titleLbl.Size = UDim2.new(0, 250, 1, 0)
+titleLbl.Position = UDim2.new(0, 20, 0, 0)
+titleLbl.Size = UDim2.new(0, 200, 1, 0)
 titleLbl.BackgroundTransparency = 1
-titleLbl.Text = "ELIXIR 3.5 - FULL"
+titleLbl.Text = "ELIXIR 3.5"
 titleLbl.Font = Enum.Font.GothamBlack
 titleLbl.TextSize = 15
 titleLbl.TextColor3 = C.text
@@ -227,8 +207,6 @@ closeBtn.TextColor3 = C.red
 closeBtn.BorderSizePixel = 0
 Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0, 6)
 closeBtn.MouseButton1Click:Connect(function()
-    running = false
-    task.wait(0.4)
     gui:Destroy()
 end)
 
@@ -239,8 +217,9 @@ sidebar.Position = UDim2.new(0, 0, 0, 46)
 sidebar.BackgroundColor3 = C.sidebar
 
 local sidebarLayout = Instance.new("UIListLayout", sidebar)
-sidebarLayout.Padding = UDim.new(0, 4)
+sidebarLayout.Padding = UDim.new(0, 8)
 sidebarLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+sidebarLayout.VerticalAlignment = Enum.VerticalAlignment.Top
 
 -- ========== CONTENT AREA ==========
 local content = Instance.new("Frame", main)
@@ -252,7 +231,7 @@ content.BackgroundColor3 = C.panel
 local pages = {}
 local tabBtns = {}
 
-local tabDefs = {"FARM", "AUTO", "STATUS", "TP", "ESP", "RESPAWN"}
+local tabDefs = {"FARM", "AUTO", "STATUS", "TP"}
 
 for i, name in ipairs(tabDefs) do
     local btn = Instance.new("TextButton", sidebar)
@@ -260,7 +239,7 @@ for i, name in ipairs(tabDefs) do
     btn.BackgroundTransparency = 1
     btn.Text = name
     btn.Font = Enum.Font.GothamBold
-    btn.TextSize = 11
+    btn.TextSize = 12
     btn.TextColor3 = C.textDim
     btn.BorderSizePixel = 0
     Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 7)
@@ -273,14 +252,14 @@ for i, name in ipairs(tabDefs) do
     page.BorderSizePixel = 0
     
     local layout = Instance.new("UIListLayout", page)
-    layout.Padding = UDim.new(0, 7)
+    layout.Padding = UDim.new(0, 8)
     layout.SortOrder = Enum.SortOrder.LayoutOrder
     
     local pad = Instance.new("UIPadding", page)
-    pad.PaddingTop = UDim.new(0, 14)
-    pad.PaddingLeft = UDim.new(0, 12)
-    pad.PaddingRight = UDim.new(0, 12)
-    pad.PaddingBottom = UDim.new(0, 14)
+    pad.PaddingTop = UDim.new(0, 10)
+    pad.PaddingLeft = UDim.new(0, 10)
+    pad.PaddingRight = UDim.new(0, 10)
+    pad.PaddingBottom = UDim.new(0, 10)
     
     pages[name] = page
     tabBtns[name] = btn
@@ -297,26 +276,6 @@ for i, name in ipairs(tabDefs) do
 end
 
 -- ========== UI COMPONENTS ==========
-local function sectionLabel(parent, text)
-    local wrap = Instance.new("Frame", parent)
-    wrap.Size = UDim2.new(1, 0, 0, 22)
-    wrap.BackgroundTransparency = 1
-    local lbl = Instance.new("TextLabel", wrap)
-    lbl.Size = UDim2.new(1, 0, 1, 0)
-    lbl.BackgroundTransparency = 1
-    lbl.Text = string.upper(text)
-    lbl.Font = Enum.Font.GothamBold
-    lbl.TextSize = 9
-    lbl.TextColor3 = C.textDim
-    lbl.TextXAlignment = Enum.TextXAlignment.Left
-    local line = Instance.new("Frame", wrap)
-    line.Size = UDim2.new(1, 0, 0, 1)
-    line.Position = UDim2.new(0, 0, 1, -1)
-    line.BackgroundColor3 = C.border
-    line.BorderSizePixel = 0
-    return wrap
-end
-
 local function card(parent, h)
     local f = Instance.new("Frame", parent)
     f.Size = UDim2.new(1, 0, 0, h or 46)
@@ -334,7 +293,7 @@ local function makeActionBtn(parent, text, color)
     f.Size = UDim2.new(1, 0, 0, 36)
     f.BackgroundColor3 = color or C.accentDim
     f.Font = Enum.Font.GothamBold
-    f.TextSize = 12
+    f.TextSize = 13
     f.TextColor3 = C.text
     f.Text = text
     f.BorderSizePixel = 0
@@ -343,48 +302,66 @@ local function makeActionBtn(parent, text, color)
 end
 
 local function makeStatusRow(parent, label)
-    local f = card(parent, 30)
+    local f = card(parent, 32)
     local lbl = Instance.new("TextLabel", f)
     lbl.Position = UDim2.new(0, 12, 0, 0)
-    lbl.Size = UDim2.new(0.6, 0, 1, 0)
+    lbl.Size = UDim2.new(0.5, 0, 1, 0)
     lbl.BackgroundTransparency = 1
     lbl.Text = label
     lbl.Font = Enum.Font.GothamSemibold
-    lbl.TextSize = 11
+    lbl.TextSize = 12
     lbl.TextColor3 = C.textMid
     lbl.TextXAlignment = Enum.TextXAlignment.Left
     local val = Instance.new("TextLabel", f)
-    val.Position = UDim2.new(0.6, 0, 0, 0)
-    val.Size = UDim2.new(0.4, -10, 1, 0)
+    val.Position = UDim2.new(0.5, 0, 0, 0)
+    val.Size = UDim2.new(0.5, -10, 1, 0)
     val.BackgroundTransparency = 1
     val.Text = "0"
     val.Font = Enum.Font.GothamBold
-    val.TextSize = 12
+    val.TextSize = 13
     val.TextColor3 = C.accentGlow
     val.TextXAlignment = Enum.TextXAlignment.Right
-    return val, f
+    return val
 end
 
 local function makeSlider(parent, labelText, minV, maxV, defaultV, callback)
-    local wrap = card(parent, 54)
+    local wrap = card(parent, 60)
     local lbl = Instance.new("TextLabel", wrap)
     lbl.Position = UDim2.new(0, 12, 0, 8)
-    lbl.Size = UDim2.new(1, -80, 0, 16)
+    lbl.Size = UDim2.new(1, -80, 0, 18)
     lbl.BackgroundTransparency = 1
     lbl.Text = labelText
     lbl.Font = Enum.Font.GothamSemibold
-    lbl.TextSize = 11
+    lbl.TextSize = 12
     lbl.TextColor3 = C.textMid
     lbl.TextXAlignment = Enum.TextXAlignment.Left
+    
     local valLbl = Instance.new("TextLabel", wrap)
-    valLbl.Position = UDim2.new(1, -52, 0, 8)
-    valLbl.Size = UDim2.new(0, 42, 0, 16)
+    valLbl.Position = UDim2.new(1, -42, 0, 8)
+    valLbl.Size = UDim2.new(0, 32, 0, 18)
     valLbl.BackgroundTransparency = 1
     valLbl.Text = tostring(defaultV)
     valLbl.Font = Enum.Font.GothamBold
-    valLbl.TextSize = 12
+    valLbl.TextSize = 13
     valLbl.TextColor3 = C.accentGlow
     valLbl.TextXAlignment = Enum.TextXAlignment.Right
+    
+    local track = Instance.new("Frame", wrap)
+    track.Position = UDim2.new(0, 12, 0, 38)
+    track.Size = UDim2.new(1, -24, 0, 6)
+    track.BackgroundColor3 = C.border
+    track.BorderSizePixel = 0
+    Instance.new("UICorner", track).CornerRadius = UDim.new(1, 0)
+    
+    local fill = Instance.new("Frame", track)
+    fill.Size = UDim2.new((defaultV - minV)/(maxV - minV), 0, 1, 0)
+    fill.BackgroundColor3 = C.accent
+    fill.BorderSizePixel = 0
+    Instance.new("UICorner", fill).CornerRadius = UDim.new(1, 0)
+    
+    -- Simplified: Just show value, no dragging for simplicity
+    if callback then callback(defaultV) end
+    
     return wrap, valLbl
 end
 
@@ -393,70 +370,110 @@ end
 -- ============================================================
 local fp = pages["FARM"]
 
-sectionLabel(fp, "Status")
-local statusCard = card(fp, 36)
+local statusCard = card(fp, 45)
 local statusLabel = Instance.new("TextLabel", statusCard)
 statusLabel.Size = UDim2.new(1, -20, 1, 0)
 statusLabel.Position = UDim2.new(0, 12, 0, 0)
 statusLabel.BackgroundTransparency = 1
-statusLabel.Text = "IDLE"
+statusLabel.Text = "⚡ IDLE"
 statusLabel.Font = Enum.Font.GothamBold
-statusLabel.TextSize = 12
-statusLabel.TextColor3 = C.textMid
+statusLabel.TextSize = 16
+statusLabel.TextColor3 = C.accentGlow
 statusLabel.TextXAlignment = Enum.TextXAlignment.Left
 
-sectionLabel(fp, "Inventory")
-local waterVal, _ = makeStatusRow(fp, "Water")
-local sugarVal, _ = makeStatusRow(fp, "Sugar")
-local gelatinVal,_ = makeStatusRow(fp, "Gelatin")
-local bagVal, _ = makeStatusRow(fp, "Empty Bag")
+local invHeader = card(fp, 30)
+local invLabel = Instance.new("TextLabel", invHeader)
+invLabel.Size = UDim2.new(1, -20, 1, 0)
+invLabel.Position = UDim2.new(0, 12, 0, 0)
+invLabel.BackgroundTransparency = 1
+invLabel.Text = "📦 INVENTORY"
+invLabel.Font = Enum.Font.GothamBold
+invLabel.TextSize = 12
+invLabel.TextColor3 = C.text
+invLabel.TextXAlignment = Enum.TextXAlignment.Left
 
-sectionLabel(fp, "Controls")
+local waterVal = makeStatusRow(fp, "💧 Water")
+local sugarVal = makeStatusRow(fp, "🍬 Sugar")
+local gelatinVal = makeStatusRow(fp, "🧴 Gelatin")
+local bagVal = makeStatusRow(fp, "👜 Empty Bag")
+
+local ctrlHeader = card(fp, 30)
+local ctrlLabel = Instance.new("TextLabel", ctrlHeader)
+ctrlLabel.Size = UDim2.new(1, -20, 1, 0)
+ctrlLabel.Position = UDim2.new(0, 12, 0, 0)
+ctrlLabel.BackgroundTransparency = 1
+ctrlLabel.Text = "🎮 CONTROLS"
+ctrlLabel.Font = Enum.Font.GothamBold
+ctrlLabel.TextSize = 12
+ctrlLabel.TextColor3 = C.text
+ctrlLabel.TextXAlignment = Enum.TextXAlignment.Left
+
 local buySliderWrap, buyValLbl = makeSlider(fp, "BUY AMOUNT", 1, 25, 1, function(v) buyAmount = v end)
 local farmToggleBtn = makeActionBtn(fp, "START FARM", C.accentDim)
-local sellToggleBtn = makeActionBtn(fp, "AUTO SELL : OFF", C.card)
+local sellToggleBtn = makeActionBtn(fp, "AUTO SELL: OFF", C.card)
 local buyNowBtn = makeActionBtn(fp, "BUY NOW", C.card)
 
 -- ============================================================
 -- AUTO PAGE
 -- ============================================================
 local ap = pages["AUTO"]
-sectionLabel(ap, "Auto Farm")
+
 local autoFarmToggle = makeActionBtn(ap, "AUTO FARM LOOP: OFF", C.card)
+local cookSliderWrap, cookValLbl = makeSlider(ap, "COOK AMOUNT", 1, 30, 5, function(v) cookAmount = v end)
 
 -- ============================================================
 -- STATUS PAGE
 -- ============================================================
 local sp = pages["STATUS"]
-sectionLabel(sp, "Player Info")
-local avatarCard = card(sp, 70)
-local avatarImg = Instance.new("ImageLabel", avatarCard)
-avatarImg.Position = UDim2.new(0, 10, 0.5, -26)
-avatarImg.Size = UDim2.new(0, 52, 0, 52)
+
+local playerCard = card(sp, 80)
+local avatarImg = Instance.new("ImageLabel", playerCard)
+avatarImg.Position = UDim2.new(0, 12, 0.5, -30)
+avatarImg.Size = UDim2.new(0, 60, 0, 60)
 avatarImg.BackgroundColor3 = C.border
 avatarImg.BorderSizePixel = 0
-Instance.new("UICorner", avatarImg).CornerRadius = UDim.new(0, 8)
+Instance.new("UICorner", avatarImg).CornerRadius = UDim.new(0, 10)
 
-local usernameLbl = Instance.new("TextLabel", avatarCard)
-usernameLbl.Position = UDim2.new(0, 72, 0, 14)
-usernameLbl.Size = UDim2.new(1, -82, 0, 20)
-usernameLbl.BackgroundTransparency = 1
-usernameLbl.Text = player.Name
-usernameLbl.Font = Enum.Font.GothamBlack
-usernameLbl.TextSize = 15
-usernameLbl.TextColor3 = C.text
-usernameLbl.TextXAlignment = Enum.TextXAlignment.Left
+local nameLbl = Instance.new("TextLabel", playerCard)
+nameLbl.Position = UDim2.new(0, 85, 0, 12)
+nameLbl.Size = UDim2.new(1, -95, 0, 25)
+nameLbl.BackgroundTransparency = 1
+nameLbl.Text = player.Name
+nameLbl.Font = Enum.Font.GothamBlack
+nameLbl.TextSize = 18
+nameLbl.TextColor3 = C.text
+nameLbl.TextXAlignment = Enum.TextXAlignment.Left
+
+local displayLbl = Instance.new("TextLabel", playerCard)
+displayLbl.Position = UDim2.new(0, 85, 0, 40)
+displayLbl.Size = UDim2.new(1, -95, 0, 20)
+displayLbl.BackgroundTransparency = 1
+displayLbl.Text = "@" .. player.DisplayName
+displayLbl.Font = Enum.Font.Gotham
+displayLbl.TextSize = 12
+displayLbl.TextColor3 = C.textMid
+displayLbl.TextXAlignment = Enum.TextXAlignment.Left
 
 pcall(function()
-    local img, _ = Players:GetUserThumbnailAsync(player.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size100x100)
+    local img, _ = Players:GetUserThumbnailAsync(player.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size150x150)
     avatarImg.Image = img
 end)
 
-sectionLabel(sp, "Inventory")
-local statWater, _ = makeStatusRow(sp, "Water")
-local statSugar, _ = makeStatusRow(sp, "Sugar")
-local statGelatin,_ = makeStatusRow(sp, "Gelatin")
-local statBag, _ = makeStatusRow(sp, "Empty Bag")
+local invHeader2 = card(sp, 30)
+local invLabel2 = Instance.new("TextLabel", invHeader2)
+invLabel2.Size = UDim2.new(1, -20, 1, 0)
+invLabel2.Position = UDim2.new(0, 12, 0, 0)
+invLabel2.BackgroundTransparency = 1
+invLabel2.Text = "📦 INVENTORY"
+invLabel2.Font = Enum.Font.GothamBold
+invLabel2.TextSize = 12
+invLabel2.TextColor3 = C.text
+invLabel2.TextXAlignment = Enum.TextXAlignment.Left
+
+local statWater = makeStatusRow(sp, "💧 Water")
+local statSugar = makeStatusRow(sp, "🍬 Sugar")
+local statGelatin = makeStatusRow(sp, "🧴 Gelatin")
+local statBag = makeStatusRow(sp, "👜 Empty Bag")
 
 -- ============================================================
 -- TP PAGE
@@ -464,77 +481,27 @@ local statBag, _ = makeStatusRow(sp, "Empty Bag")
 local tp = pages["TP"]
 
 local function tpBtn(label, cf)
-    local b = makeActionBtn(tp, label, C.card)
-    b.MouseButton1Click:Connect(function()
-        notify("Teleport", label, "info")
+    local btn = makeActionBtn(tp, label, C.card)
+    btn.MouseButton1Click:Connect(function()
+        notify("Teleport", "Menuju " .. label, "info")
         vehicleTeleport(cf)
         notify("Teleport", "Selesai", "success")
     end)
-    return b
+    return btn
 end
 
-sectionLabel(tp, "Quick")
-tpBtn("NPC Store", npcPos)
-tpBtn("Tier", tierPos)
-sectionLabel(tp, "Apartments")
-tpBtn("Apart 1", apart1)
-tpBtn("Apart 2", apart2)
-tpBtn("Apart 3", apart3)
-tpBtn("Apart 4", apart4)
-tpBtn("Apart 5", apart5)
-tpBtn("Apart 6", apart6)
-sectionLabel(tp, "CSN")
-tpBtn("CSN 1", csn1)
-tpBtn("CSN 2", csn2)
-tpBtn("CSN 3", csn3)
-tpBtn("CSN 4", csn4)
-
--- ============================================================
--- ESP PAGE
--- ============================================================
-local ep = pages["ESP"]
-sectionLabel(ep, "ESP Settings")
-local espToggle = makeActionBtn(ep, "ESP ENABLED: OFF", C.card)
-
--- ============================================================
--- RESPAWN PAGE
--- ============================================================
-local rp = pages["RESPAWN"]
-sectionLabel(rp, "Spawn Points")
-
-local function makeSpawnBtn(name, pos)
-    local b = makeActionBtn(rp, name, C.card)
-    b.MouseButton1Click:Connect(function()
-        selectedSpawn = pos
-        notify("Spawn", name .. " dipilih", "success")
-    end)
-    return b
-end
-
-makeSpawnBtn("Dealer", Vector3.new(511,3,601))
-makeSpawnBtn("RS 1", Vector3.new(1140.8,10.1,451.8))
-makeSpawnBtn("RS 2", Vector3.new(1141.2,10.1,423.2))
-makeSpawnBtn("Tier 1", Vector3.new(985.9,10.1,247))
-makeSpawnBtn("Tier 2", Vector3.new(989.3,11.0,228.3))
-makeSpawnBtn("GS Ujung", Vector3.new(-467.1,4.8,353.5))
-
-local respawnBtn = makeActionBtn(rp, "RESPAWN SEKARANG", C.accent)
-respawnBtn.MouseButton1Click:Connect(function()
-    if not selectedSpawn then
-        notify("Respawn", "Pilih spawn dulu!", "error")
-        return
-    end
-    local hum = player.Character and player.Character:FindFirstChild("Humanoid")
-    if hum then
-        hum.Health = 0
-    end
-    task.wait(1.5)
-    local newChar = player.Character
-    if newChar and newChar:FindFirstChild("HumanoidRootPart") then
-        newChar.HumanoidRootPart.CFrame = CFrame.new(selectedSpawn)
-        notify("Respawn", "Selesai!", "success")
-    end
-end)
+tpBtn("🏪 NPC Store", npcPos)
+tpBtn("🗼 Tier", tierPos)
+tpBtn("🏢 Apart 1", apart1)
+tpBtn("🏢 Apart 2", apart2)
+tpBtn("🏢 Apart 3", apart3)
+tpBtn("🏢 Apart 4", apart4)
+tpBtn("🏢 Apart 5", apart5)
+tpBtn("🏢 Apart 6", apart6)
+tpBtn("🔫 CSN 1", csn1)
+tpBtn("🔫 CSN 2", csn2)
+tpBtn("🔫 CSN 3", csn3)
+tpBtn("🔫 CSN 4", csn4)
 
 -- ============================================================
 -- FARM LOGIC
@@ -551,10 +518,12 @@ local function startFarm()
     farmToggleBtn.Text = "STOP FARM"
     farmToggleBtn.BackgroundColor3 = C.red
     notify("Farm", "Memulai...", "info")
+    
     task.spawn(function()
         while running do
-            statusLabel.Text = "MEMBELI..."
+            statusLabel.Text = "🛒 MEMBELI"
             statusLabel.TextColor3 = C.accentGlow
+            
             if buyRemote then
                 for i = 1, buyAmount do
                     if not running then break end
@@ -568,11 +537,37 @@ local function startFarm()
                     task.wait(0.15)
                 end
             end
-            statusLabel.Text = "SELESAI"
-            statusLabel.TextColor3 = C.textMid
+            
+            statusLabel.Text = "✅ SELESAI"
+            statusLabel.TextColor3 = C.green
             task.wait(3)
         end
     end)
 end
 
-farmToggleBtn.MouseButton1Click:Connect(sta
+farmToggleBtn.MouseButton1Click:Connect(startFarm)
+
+buyNowBtn.MouseButton1Click:Connect(function()
+    if buyRemote then
+        for i = 1, buyAmount do
+            pcall(function() buyRemote:FireServer("Water") end)
+            task.wait(0.1)
+            pcall(function() buyRemote:FireServer("Sugar") end)
+            task.wait(0.1)
+            pcall(function() buyRemote:FireServer("Gelatin") end)
+            task.wait(0.1)
+            pcall(function() buyRemote:FireServer("Empty Bag") end)
+            task.wait(0.1)
+        end
+        notify("Buy", "Berhasil membeli " .. buyAmount .. "x", "success")
+    else
+        notify("Error", "Remote tidak ditemukan!", "error")
+    end
+end)
+
+sellToggleBtn.MouseButton1Click:Connect(function()
+    autoSellEnabled = not autoSellEnabled
+    if autoSellEnabled then
+        sellToggleBtn.Text = "AUTO SELL: ON"
+        sellToggleBtn.BackgroundColor3 = C.accentDim
+        noti
